@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import { TestBed } from '@angular/core/testing';
+import { ApiService } from './api.service';
 import { LedgerService } from './ledger.service';
 import { LOCAL_DB, LocalDb } from './local-db';
 import { Client } from './models';
@@ -33,7 +34,8 @@ describe('LedgerService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: LOCAL_DB, useValue: db },
-        { provide: SyncService, useValue: { kick } },
+        { provide: SyncService, useValue: { kick, run: vi.fn() } },
+        { provide: ApiService, useValue: {} },
       ],
     });
     service = TestBed.inject(LedgerService);
@@ -78,5 +80,15 @@ describe('LedgerService', () => {
     const outbox = await db.outbox.get(client.id);
     expect(outbox?.kind).toBe('client');
     expect((await service.clients('rosa'))[0].balance).toBe('0.00');
+  });
+
+  it('undoes a purchase that was not sent yet without calling the api', async () => {
+    const recorded = await service.recordPurchase(joao.id, 2340, '');
+
+    const result = await service.undo('purchase', recorded.id);
+
+    expect(result).toBe('local');
+    expect(await db.outbox.count()).toBe(0);
+    expect((await service.client(joao.id))?.balance).toBe('87.50');
   });
 });

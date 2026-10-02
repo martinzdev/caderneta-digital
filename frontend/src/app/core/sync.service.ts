@@ -94,6 +94,10 @@ export class SyncService {
     for (const item of items.filter((i) => !i.error)) {
       try {
         await this.send(item);
+        if (!(await this.db.outbox.get(item.id))) {
+          await this.cancelUndone(item);
+          continue;
+        }
         await this.db.outbox.delete(item.id);
         if (item.kind === 'purchase') {
           await this.db.purchases.delete(item.id);
@@ -125,6 +129,14 @@ export class SyncService {
         return this.api.purchase(item.payload as Purchase);
       case 'payment':
         return this.api.payment(item.payload as Payment);
+    }
+  }
+
+  private async cancelUndone(item: OutboxItem): Promise<void> {
+    if (item.kind === 'purchase') {
+      await this.api.cancelPurchase(item.id);
+    } else if (item.kind === 'payment') {
+      await this.api.cancelPayment(item.id);
     }
   }
 

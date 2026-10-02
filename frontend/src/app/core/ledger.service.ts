@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { ApiService } from './api.service';
 import { LOCAL_DB } from './local-db';
 import { Client, Payment, PaymentMethod, Purchase } from './models';
 import { fromCents, toCents } from './money';
@@ -22,6 +23,7 @@ function normalize(text: string): string {
 export class LedgerService {
   private db = inject(LOCAL_DB);
   private sync = inject(SyncService);
+  private api = inject(ApiService);
 
   async clients(term = ''): Promise<ClientView[]> {
     const needle = normalize(term.trim());
@@ -104,6 +106,33 @@ export class LedgerService {
     });
     this.sync.kick();
     return { id: payment.id, client: (await this.client(clientId))!, amountCents: cents };
+  }
+
+  async isPending(id: string): Promise<boolean> {
+    return (await this.db.outbox.get(id)) !== undefined;
+  }
+
+  async undo(kind: 'purchase' | 'payment', id: string): Promise<'local' | 'server'> {
+    const removed = await this.db.transaction(
+      'rw',
+      this.db.outbox,
+      this.db.purchases,
+      this.db.payments,
+      async () => {
+        if (!(await this.db.outbox.get(id))) {
+          return false;
+        }
+        await this.db.outbox.delete(id);
+        await (kind === 'purchase' ? this.db.purchases : this.db.payments).delete(id);
+        return true;
+      },
+    );
+    if (removed) {
+      return 'local';
+    }
+    await (kind === 'purchase' ? this.api.cancelPurchase(id) : this.api.cancelPayment(id));
+    await this.sync.run();
+    return 'server';
   }
 
   private async withPending(client: Client): Promise<ClientView> {
