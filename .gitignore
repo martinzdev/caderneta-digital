@@ -8,3 +8,4 @@ __pycache__/
 .demo-password
 .DS_Store
 Thumbs.db
+.coverage

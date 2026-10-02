@@ -97,7 +97,7 @@ export class RecordPage {
         : await this.ledger.recordPayment(client.id, cents, this.method());
     await this.router.navigate(['/clientes', client.id, 'registro'], {
       replaceUrl: true,
-      state: { kind: this.mode(), cents: result.amountCents },
+      state: { kind: this.mode(), cents: result.amountCents, recordId: result.id },
     });
   }
 }

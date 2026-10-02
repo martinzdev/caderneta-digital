@@ -68,7 +68,7 @@
       </div>
       <fieldset>
         <legend class="text-lg font-semibold">Como vai pagar?</legend>
-        <div class="mt-2 grid grid-cols-2 gap-3">
+        <div class="mt-2 grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-3">
           <button
             type="button"
             (click)="payment.set('tab')"
@@ -91,7 +91,7 @@
           </button>
         </div>
       </fieldset>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(8rem,1fr))] gap-3">
         <button
           type="button"
           (click)="showForm.set(false)"
@@ -141,7 +141,7 @@
             />
           </div>
         }
-        <div class="grid grid-cols-[1fr_auto] gap-2">
+        <div class="flex flex-wrap gap-2 [&>button]:grow">
           <button
             type="button"
             (click)="advance(order)"

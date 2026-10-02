@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
 import { ClientView, LedgerService } from '../../core/ledger.service';
 import { formatBRL, toCents } from '../../core/money';
 import { SyncService } from '../../core/sync.service';
@@ -10,6 +11,7 @@ import { Icon } from '../../shared/icon';
 interface SavedState {
   kind?: 'purchase' | 'payment';
   cents?: number;
+  recordId?: string;
 }
 
 @Component({
@@ -21,6 +23,7 @@ export class ResultPage {
   private ledger = inject(LedgerService);
   private api = inject(ApiService);
   protected readonly sync = inject(SyncService);
+  private auth = inject(AuthService);
 
   readonly id = input.required<string>();
 
@@ -29,6 +32,9 @@ export class ResultPage {
   protected readonly statement = signal<string | null>(null);
   protected readonly statementError = signal(false);
   protected readonly formatBRL = formatBRL;
+  protected readonly undone = signal(false);
+  protected readonly undoError = signal('');
+  protected readonly canUndo = signal(false);
 
   protected readonly owes = computed(() => toCents(this.client()?.balance) > 0);
 
@@ -54,8 +60,32 @@ export class ResultPage {
     });
   }
 
+  async undo(): Promise<void> {
+    const { kind, cents, recordId } = this.saved;
+    if (!kind || !recordId || !cents) {
+      return;
+    }
+    const label = kind === 'purchase' ? 'a compra' : 'o pagamento';
+    if (!confirm(`Desfazer ${label} de ${formatBRL(cents / 100)}?`)) {
+      return;
+    }
+    try {
+      await this.ledger.undo(kind, recordId);
+      this.undone.set(true);
+      this.canUndo.set(false);
+      this.statement.set(null);
+      await this.load(this.id());
+    } catch {
+      this.undoError.set('Não foi possível desfazer agora. Tente de novo com internet.');
+    }
+  }
+
   private async load(id: string): Promise<void> {
     this.client.set((await this.ledger.client(id)) ?? null);
+    const recordId = this.saved.recordId;
+    if (recordId && !this.undone()) {
+      this.canUndo.set(this.auth.isOwner() || (await this.ledger.isPending(recordId)));
+    }
     if (!this.sync.online() || this.client()?.pending) {
       return;
     }

@@ -56,6 +56,14 @@ export class ApiService {
     return firstValueFrom(this.http.post<RecordResult>(`${this.base}/payments`, data));
   }
 
+  cancelPurchase(id: string) {
+    return firstValueFrom(this.http.post<RecordResult>(`${this.base}/purchases/${id}/cancel`, {}));
+  }
+
+  cancelPayment(id: string) {
+    return firstValueFrom(this.http.post<RecordResult>(`${this.base}/payments/${id}/cancel`, {}));
+  }
+
   statement(clientId: string, month?: string) {
     let params = new HttpParams();
     if (month) {

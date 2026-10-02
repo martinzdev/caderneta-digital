@@ -12,6 +12,7 @@
 
 html {
   font-size: 112.5%;
+  scroll-padding-bottom: 8rem;
 }
 
 body {

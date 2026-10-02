@@ -51,19 +51,21 @@
       <li>
         <a
           [routerLink]="['/clientes', client.id]"
-          class="flex min-h-24 items-center justify-between gap-3 rounded-2xl border-2 border-gray-300 px-4 py-3 active:bg-gray-100"
+          class="flex min-h-24 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-2xl border-2 border-gray-300 px-4 py-3 active:bg-gray-100"
         >
           <span>
             <span class="block text-xl font-bold">{{ client.name }}</span>
             <span class="block text-base text-gray-600">{{ maskPhone(client.phone) }}</span>
           </span>
           @if (owes(client)) {
-            <span class="flex items-center gap-1 text-right text-lg font-bold text-red-700">
+            <span class="flex items-center gap-1 whitespace-nowrap text-lg font-bold text-red-700">
               <app-icon name="alert" [size]="22" />
               Deve {{ formatBRL(client.balance) }}
             </span>
           } @else {
-            <span class="flex items-center gap-1 text-lg font-bold text-brand-700">
+            <span
+              class="flex items-center gap-1 whitespace-nowrap text-lg font-bold text-brand-700"
+            >
               <app-icon name="check" [size]="22" />
               Em dia
             </span>
