@@ -1,0 +1,44 @@
+<section class="flex min-h-dvh flex-col justify-center px-6 py-10">
+  <h1 class="text-3xl font-bold text-brand-900">Caderneta Digital</h1>
+  <p class="mt-2 text-lg text-gray-700">Hortifrúti Recanto Verde</p>
+
+  <form class="mt-10 space-y-6" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div>
+      <label for="login" class="block text-lg font-semibold">Usuário</label>
+      <input
+        id="login"
+        formControlName="login"
+        autocomplete="username"
+        autocapitalize="none"
+        class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+      />
+    </div>
+    <div>
+      <label for="password" class="block text-lg font-semibold">Senha</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+        class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+      />
+    </div>
+
+    @if (error()) {
+      <p
+        role="alert"
+        class="rounded-xl border-2 border-red-700 bg-red-50 p-4 font-semibold text-red-800"
+      >
+        {{ error() }}
+      </p>
+    }
+
+    <button
+      type="submit"
+      [disabled]="loading()"
+      class="h-16 w-full rounded-2xl bg-brand-800 text-xl font-bold text-white disabled:opacity-60"
+    >
+      {{ loading() ? 'Entrando...' : 'Entrar' }}
+    </button>
+  </form>
+</section>

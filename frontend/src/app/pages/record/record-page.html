@@ -1,0 +1,130 @@
+@if (client(); as c) {
+  <app-back-header [title]="c.name" />
+
+  <section class="space-y-6 px-4 py-5">
+    <div
+      class="rounded-2xl border-2 p-4"
+      [class]="owes() ? 'border-red-700 bg-red-50' : 'border-brand-700 bg-brand-50'"
+    >
+      <p class="text-base text-gray-700">Saldo atual</p>
+      @if (owes()) {
+        <p class="flex items-center gap-2 text-2xl font-bold text-red-700">
+          <app-icon name="alert" /> Deve {{ formatBRL(c.balance) }}
+        </p>
+      } @else {
+        <p class="flex items-center gap-2 text-2xl font-bold text-brand-800">
+          <app-icon name="check" /> Em dia
+        </p>
+      }
+    </div>
+
+    <div class="grid grid-cols-2 gap-3" role="group" aria-label="O que você quer fazer?">
+      <button
+        type="button"
+        (click)="setMode('purchase')"
+        [attr.aria-pressed]="mode() === 'purchase'"
+        class="flex min-h-16 items-center justify-center gap-2 rounded-2xl border-2 text-lg font-bold"
+        [class]="
+          mode() === 'purchase'
+            ? 'border-brand-800 bg-brand-800 text-white'
+            : 'border-gray-400 text-gray-800'
+        "
+      >
+        @if (mode() === 'purchase') {
+          <app-icon name="check" [size]="20" />
+        }
+        Anotar compra
+      </button>
+      <button
+        type="button"
+        (click)="setMode('payment')"
+        [attr.aria-pressed]="mode() === 'payment'"
+        class="flex min-h-16 items-center justify-center gap-2 rounded-2xl border-2 text-lg font-bold"
+        [class]="
+          mode() === 'payment'
+            ? 'border-brand-800 bg-brand-800 text-white'
+            : 'border-gray-400 text-gray-800'
+        "
+      >
+        @if (mode() === 'payment') {
+          <app-icon name="check" [size]="20" />
+        }
+        Registrar pagamento
+      </button>
+    </div>
+
+    <form class="space-y-6" (submit)="$event.preventDefault(); save()" novalidate>
+      <div>
+        <label for="amount" class="block text-lg font-semibold">Valor (R$)</label>
+        <input
+          id="amount"
+          inputmode="decimal"
+          autocomplete="off"
+          placeholder="0,00"
+          [value]="amount()"
+          (input)="amount.set($any($event.target).value); error.set('')"
+          [attr.aria-invalid]="!!error()"
+          aria-describedby="amount-error"
+          class="mt-2 h-16 w-full rounded-xl border-2 px-4 text-3xl"
+          [class]="error() ? 'border-red-700' : 'border-gray-400'"
+        />
+        @if (error()) {
+          <p
+            id="amount-error"
+            role="alert"
+            class="mt-2 flex items-center gap-2 text-lg font-semibold text-red-700"
+          >
+            <app-icon name="alert" [size]="20" /> {{ error() }}
+          </p>
+        }
+      </div>
+
+      @if (mode() === 'purchase') {
+        <div>
+          <label for="description" class="block text-lg font-semibold">Descrição (opcional)</label>
+          <input
+            id="description"
+            maxlength="120"
+            autocomplete="off"
+            placeholder="Ex.: frutas e verduras"
+            [value]="description()"
+            (input)="description.set($any($event.target).value)"
+            class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+          />
+        </div>
+      } @else {
+        <fieldset>
+          <legend class="text-lg font-semibold">Forma de pagamento</legend>
+          <div class="mt-2 grid grid-cols-3 gap-3">
+            @for (m of methods; track m.value) {
+              <button
+                type="button"
+                (click)="method.set(m.value)"
+                [attr.aria-pressed]="method() === m.value"
+                class="min-h-14 rounded-xl border-2 text-lg font-bold"
+                [class]="
+                  method() === m.value
+                    ? 'border-brand-800 bg-brand-100 text-brand-900'
+                    : 'border-gray-400'
+                "
+              >
+                {{ m.label }}
+              </button>
+            }
+          </div>
+        </fieldset>
+      }
+
+      <button
+        type="submit"
+        [disabled]="saving()"
+        class="h-16 w-full rounded-2xl bg-brand-800 text-2xl font-bold text-white disabled:opacity-60"
+      >
+        Salvar
+      </button>
+    </form>
+  </section>
+} @else if (notFound()) {
+  <app-back-header title="Cliente" />
+  <p class="m-4 rounded-xl bg-gray-100 p-4 text-lg">Cliente não encontrado neste aparelho.</p>
+}

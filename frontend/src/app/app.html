@@ -1,1 +1,29 @@
-<router-outlet />
+<div class="mx-auto flex min-h-dvh max-w-xl flex-col">
+  <main class="flex-1" [class.pb-28]="showNav()">
+    <router-outlet />
+  </main>
+
+  @if (showNav()) {
+    <nav
+      aria-label="Menu principal"
+      class="fixed inset-x-0 bottom-0 border-t-2 border-gray-200 bg-gray-50"
+    >
+      <ul class="mx-auto grid max-w-xl grid-cols-3">
+        @for (tab of tabs; track tab.path) {
+          <li>
+            <a
+              [routerLink]="tab.path"
+              routerLinkActive="text-brand-800 font-bold"
+              [routerLinkActiveOptions]="{ exact: tab.exact }"
+              ariaCurrentWhenActive="page"
+              class="flex min-h-20 flex-col items-center justify-center gap-1 text-base text-gray-700"
+            >
+              <app-icon [name]="tab.icon" [size]="28" />
+              {{ tab.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+</div>
