@@ -1,0 +1,86 @@
+@if (client(); as c) {
+  <app-back-header [title]="saved.kind === 'payment' ? 'Pagamento registrado' : 'Compra anotada'" />
+
+  <section class="space-y-4 px-4 py-5">
+    @if (saved.cents) {
+      <div role="status" class="rounded-2xl border-2 border-brand-700 bg-brand-50 p-4">
+        <p class="flex items-center gap-2 text-xl font-bold text-brand-800">
+          <app-icon name="check" />
+          {{ saved.kind === 'payment' ? 'Pagamento de' : 'Compra de' }}
+          {{ formatBRL(saved.cents / 100) }}
+          {{ saved.kind === 'payment' ? 'registrado' : 'anotada' }}
+        </p>
+        <p class="mt-1 text-lg">para {{ c.name }}</p>
+      </div>
+    }
+
+    <div class="text-center">
+      <p class="text-lg text-gray-700">{{ owes() ? 'Deve agora' : 'Saldo' }}</p>
+      <p class="text-5xl font-bold" [class]="owes() ? 'text-red-700' : 'text-brand-800'">
+        {{ owes() ? formatBRL(c.balance) : 'Em dia' }}
+      </p>
+    </div>
+
+    @if (c.over_limit && c.credit_limit) {
+      <p
+        role="alert"
+        class="flex gap-2 rounded-2xl border-2 border-amber-700 bg-amber-50 p-4 text-lg font-semibold text-amber-900"
+      >
+        <app-icon name="alert" />
+        Atenção: limite do fiado de {{ formatBRL(c.credit_limit) }} ultrapassado.
+      </p>
+    }
+
+    @if (!sync.online()) {
+      <p class="flex gap-2 rounded-2xl border-2 border-gray-400 bg-gray-50 p-4 text-lg">
+        <app-icon name="cloud-off" />
+        Sem internet: o registro está salvo no celular e será enviado quando conectar.
+      </p>
+    } @else if (c.pending) {
+      <p class="flex gap-2 rounded-2xl border-2 border-gray-400 bg-gray-50 p-4 text-lg">
+        <app-icon name="cloud" />
+        Enviando para o servidor...
+      </p>
+    }
+
+    <div>
+      <h2 class="text-xl font-bold">Extrato do mês</h2>
+      @if (statement(); as text) {
+        <pre
+          class="mt-2 whitespace-pre-wrap rounded-2xl border-2 border-brand-100 bg-brand-50 p-4 font-sans text-lg leading-relaxed"
+          >{{ text }}</pre>
+      } @else if (statementError()) {
+        <p class="mt-2 text-lg">
+          Não foi possível carregar o extrato agora. Tente de novo em instantes.
+        </p>
+      } @else if (!sync.online() || c.pending) {
+        <p class="mt-2 text-lg">O extrato aparece aqui assim que o registro for enviado.</p>
+      } @else {
+        <p class="mt-2 text-lg">Carregando extrato...</p>
+      }
+    </div>
+
+    @if (whatsappUrl(); as url) {
+      <a
+        [href]="url"
+        target="_blank"
+        rel="noopener"
+        class="flex h-16 items-center justify-center gap-2 rounded-2xl bg-brand-700 text-xl font-bold text-white"
+      >
+        <app-icon name="message" />
+        Enviar extrato pelo WhatsApp
+      </a>
+    } @else if (!c.phone) {
+      <p class="rounded-xl bg-gray-100 p-4 text-lg">
+        Cadastre o telefone do cliente para enviar o extrato.
+      </p>
+    }
+
+    <a
+      routerLink="/"
+      class="flex h-16 items-center justify-center rounded-2xl border-2 border-brand-800 text-xl font-bold text-brand-800"
+    >
+      Voltar para clientes
+    </a>
+  </section>
+}

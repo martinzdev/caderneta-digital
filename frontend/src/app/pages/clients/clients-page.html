@@ -1,0 +1,83 @@
+<header class="bg-brand-900 px-4 pb-4 pt-5 text-white">
+  <div class="flex items-center justify-between gap-3">
+    <h1 class="text-2xl font-bold">Caderneta Digital</h1>
+    <button
+      type="button"
+      (click)="auth.logout()"
+      class="flex min-h-12 items-center gap-2 rounded-xl border-2 border-white px-4 font-semibold"
+    >
+      <app-icon name="logout" [size]="20" />
+      Sair
+    </button>
+  </div>
+</header>
+
+<section class="space-y-4 px-4 pt-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <p class="text-lg font-semibold">Olá, {{ auth.user()?.name }}</p>
+    <app-sync-badge />
+  </div>
+
+  <div>
+    <label for="search" class="block text-lg font-semibold">Buscar cliente</label>
+    <div class="relative mt-2">
+      <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+        <app-icon name="search" />
+      </span>
+      <input
+        id="search"
+        type="search"
+        autocomplete="off"
+        placeholder="Digite o nome"
+        [value]="term()"
+        (input)="term.set($any($event.target).value)"
+        class="h-16 w-full rounded-xl border-2 border-gray-400 pl-14 pr-4 text-xl"
+      />
+    </div>
+  </div>
+
+  @if (loaded() && clients().length === 0) {
+    <p class="rounded-xl bg-gray-100 p-4 text-lg">
+      @if (term()) {
+        Nenhum cliente encontrado com "{{ term() }}".
+      } @else {
+        Nenhum cliente cadastrado ainda.
+      }
+    </p>
+  }
+
+  <ul class="space-y-3" aria-label="Clientes">
+    @for (client of clients(); track client.id) {
+      <li>
+        <a
+          [routerLink]="['/clientes', client.id]"
+          class="flex min-h-24 items-center justify-between gap-3 rounded-2xl border-2 border-gray-300 px-4 py-3 active:bg-gray-100"
+        >
+          <span>
+            <span class="block text-xl font-bold">{{ client.name }}</span>
+            <span class="block text-base text-gray-600">{{ maskPhone(client.phone) }}</span>
+          </span>
+          @if (owes(client)) {
+            <span class="flex items-center gap-1 text-right text-lg font-bold text-red-700">
+              <app-icon name="alert" [size]="22" />
+              Deve {{ formatBRL(client.balance) }}
+            </span>
+          } @else {
+            <span class="flex items-center gap-1 text-lg font-bold text-brand-700">
+              <app-icon name="check" [size]="22" />
+              Em dia
+            </span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+
+  <a
+    routerLink="/clientes/novo"
+    class="flex h-16 items-center justify-center gap-2 rounded-2xl border-2 border-brand-800 text-xl font-bold text-brand-800"
+  >
+    <app-icon name="plus" />
+    Novo cliente
+  </a>
+</section>

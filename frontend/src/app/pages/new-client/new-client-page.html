@@ -1,0 +1,80 @@
+<app-back-header title="Novo cliente" />
+
+<form class="space-y-6 px-4 py-6" [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <div>
+    <label for="name" class="block text-lg font-semibold">Nome</label>
+    <input
+      id="name"
+      formControlName="name"
+      autocomplete="off"
+      [attr.aria-invalid]="!!errors()['name']"
+      aria-describedby="name-error"
+      class="mt-2 h-14 w-full rounded-xl border-2 px-4 text-xl"
+      [class]="errors()['name'] ? 'border-red-700' : 'border-gray-400'"
+    />
+    @if (errors()['name']) {
+      <p id="name-error" role="alert" class="mt-2 font-semibold text-red-700">
+        {{ errors()['name'] }}
+      </p>
+    }
+  </div>
+
+  <div>
+    <label for="phone" class="block text-lg font-semibold">Telefone com DDD (opcional)</label>
+    <input
+      id="phone"
+      formControlName="phone"
+      type="tel"
+      inputmode="tel"
+      autocomplete="off"
+      placeholder="69 99999-1234"
+      [attr.aria-invalid]="!!errors()['phone']"
+      aria-describedby="phone-error"
+      class="mt-2 h-14 w-full rounded-xl border-2 px-4 text-xl"
+      [class]="errors()['phone'] ? 'border-red-700' : 'border-gray-400'"
+    />
+    @if (errors()['phone']) {
+      <p id="phone-error" role="alert" class="mt-2 font-semibold text-red-700">
+        {{ errors()['phone'] }}
+      </p>
+    }
+  </div>
+
+  <div>
+    <label for="address" class="block text-lg font-semibold">Endereço de entrega (opcional)</label>
+    <input
+      id="address"
+      formControlName="address"
+      autocomplete="off"
+      class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+    />
+  </div>
+
+  <div>
+    <label for="limit" class="block text-lg font-semibold">Limite do fiado em R$ (opcional)</label>
+    <input
+      id="limit"
+      formControlName="limit"
+      inputmode="decimal"
+      autocomplete="off"
+      placeholder="100,00"
+      [attr.aria-invalid]="!!errors()['limit']"
+      aria-describedby="limit-error"
+      class="mt-2 h-14 w-full rounded-xl border-2 px-4 text-xl"
+      [class]="errors()['limit'] ? 'border-red-700' : 'border-gray-400'"
+    />
+    @if (errors()['limit']) {
+      <p id="limit-error" role="alert" class="mt-2 font-semibold text-red-700">
+        {{ errors()['limit'] }}
+      </p>
+    }
+  </div>
+
+  <button
+    type="submit"
+    [disabled]="saving()"
+    class="h-16 w-full rounded-2xl bg-brand-800 text-xl font-bold text-white disabled:opacity-60"
+  >
+    Salvar cliente
+  </button>
+</form>
