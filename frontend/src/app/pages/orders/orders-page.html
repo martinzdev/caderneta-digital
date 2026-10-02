@@ -1,0 +1,185 @@
+<header class="bg-brand-900 px-4 py-5 text-white">
+  <h1 class="text-2xl font-bold">Pedidos de entrega</h1>
+</header>
+
+<section class="space-y-4 px-4 py-4">
+  @if (!sync.online()) {
+    <p
+      class="flex gap-2 rounded-2xl border-2 border-amber-700 bg-amber-50 p-4 text-lg text-amber-900"
+    >
+      <app-icon name="cloud-off" />
+      Sem internet. Os pedidos aparecem quando o celular conectar.
+    </p>
+  }
+
+  @if (message()) {
+    <p role="status" class="rounded-xl bg-gray-100 p-4 text-lg font-semibold">{{ message() }}</p>
+  }
+
+  @if (!showForm()) {
+    <button
+      type="button"
+      (click)="showForm.set(true); message.set('')"
+      [disabled]="!sync.online()"
+      class="flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-brand-800 text-xl font-bold text-white disabled:opacity-50"
+    >
+      <app-icon name="plus" /> Novo pedido
+    </button>
+  } @else {
+    <form
+      class="space-y-4 rounded-2xl border-2 border-gray-300 p-4"
+      (submit)="$event.preventDefault(); create()"
+      novalidate
+    >
+      <div>
+        <label for="client" class="block text-lg font-semibold">Cliente</label>
+        <select
+          id="client"
+          [value]="clientId()"
+          (change)="pickClient($any($event.target).value)"
+          class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 bg-white px-3 text-xl"
+        >
+          <option value="">Escolha o cliente</option>
+          @for (c of clients(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="items" class="block text-lg font-semibold">Itens do pedido</label>
+        <textarea
+          id="items"
+          rows="3"
+          maxlength="500"
+          placeholder="Ex.: 2 kg de tomate, 1 alface"
+          [value]="items()"
+          (input)="items.set($any($event.target).value)"
+          class="mt-2 w-full rounded-xl border-2 border-gray-400 p-3 text-xl"
+        ></textarea>
+      </div>
+      <div>
+        <label for="address" class="block text-lg font-semibold">Endereço de entrega</label>
+        <input
+          id="address"
+          [value]="address()"
+          (input)="address.set($any($event.target).value)"
+          class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+        />
+      </div>
+      <fieldset>
+        <legend class="text-lg font-semibold">Como vai pagar?</legend>
+        <div class="mt-2 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            (click)="payment.set('tab')"
+            [attr.aria-pressed]="payment() === 'tab'"
+            class="min-h-14 rounded-xl border-2 text-lg font-bold"
+            [class]="payment() === 'tab' ? 'border-brand-800 bg-brand-100' : 'border-gray-400'"
+          >
+            No fiado
+          </button>
+          <button
+            type="button"
+            (click)="payment.set('on_delivery')"
+            [attr.aria-pressed]="payment() === 'on_delivery'"
+            class="min-h-14 rounded-xl border-2 text-lg font-bold"
+            [class]="
+              payment() === 'on_delivery' ? 'border-brand-800 bg-brand-100' : 'border-gray-400'
+            "
+          >
+            Na entrega
+          </button>
+        </div>
+      </fieldset>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          (click)="showForm.set(false)"
+          class="h-14 rounded-xl border-2 border-gray-400 text-lg font-bold"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="busy()"
+          class="h-14 rounded-xl bg-brand-800 text-lg font-bold text-white disabled:opacity-60"
+        >
+          Salvar pedido
+        </button>
+      </div>
+    </form>
+  }
+
+  <h2 class="pt-2 text-xl font-bold">Em andamento ({{ open().length }})</h2>
+  @if (open().length === 0) {
+    <p class="text-lg text-gray-700">Nenhum pedido em andamento.</p>
+  }
+  <ul class="space-y-3">
+    @for (order of open(); track order.id) {
+      <li class="space-y-3 rounded-2xl border-2 border-gray-300 p-4">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-xl font-bold">{{ order.client_name }}</p>
+          <span class="rounded-full bg-gray-200 px-3 py-1 font-semibold">{{
+            statusLabel[order.status]
+          }}</span>
+        </div>
+        <p class="text-lg">{{ order.items }}</p>
+        <p class="text-base text-gray-700">
+          {{ order.address }} · {{ order.payment === 'tab' ? 'No fiado' : 'Paga na entrega' }}
+        </p>
+        @if (order.status === 'packed' && order.payment === 'tab') {
+          <div>
+            <label [for]="'amount-' + order.id" class="block font-semibold"
+              >Valor do pedido (R$)</label
+            >
+            <input
+              [id]="'amount-' + order.id"
+              inputmode="decimal"
+              placeholder="0,00"
+              (input)="setAmount(order.id, $any($event.target).value)"
+              class="mt-1 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+            />
+          </div>
+        }
+        <div class="grid grid-cols-[1fr_auto] gap-2">
+          <button
+            type="button"
+            (click)="advance(order)"
+            [disabled]="busy() || !sync.online()"
+            class="min-h-14 rounded-xl bg-brand-800 px-3 text-lg font-bold text-white disabled:opacity-50"
+          >
+            {{ actionLabel[order.status] }}
+          </button>
+          <button
+            type="button"
+            (click)="cancel(order)"
+            [disabled]="busy() || !sync.online()"
+            class="min-h-14 rounded-xl border-2 border-red-700 px-3 text-lg font-bold text-red-700 disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+
+  @if (done().length) {
+    <h2 class="pt-2 text-xl font-bold">Últimos finalizados</h2>
+    <ul class="space-y-2">
+      @for (order of done(); track order.id) {
+        <li class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-lg">
+          <span>{{ order.client_name }}</span>
+          <span
+            class="flex items-center gap-1 font-semibold"
+            [class]="order.status === 'delivered' ? 'text-brand-800' : 'text-gray-600'"
+          >
+            @if (order.status === 'delivered') {
+              <app-icon name="check" [size]="20" />
+            }
+            {{ statusLabel[order.status] }}
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</section>

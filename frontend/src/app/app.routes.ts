@@ -32,6 +32,16 @@ export const routes: Routes = [
         title: 'Registro salvo · Caderneta Digital',
         loadComponent: () => import('./pages/result/result-page').then((m) => m.ResultPage),
       },
+      {
+        path: 'pedidos',
+        title: 'Pedidos · Caderneta Digital',
+        loadComponent: () => import('./pages/orders/orders-page').then((m) => m.OrdersPage),
+      },
+      {
+        path: 'resumo',
+        title: 'Resumo · Caderneta Digital',
+        loadComponent: () => import('./pages/summary/summary-page').then((m) => m.SummaryPage),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

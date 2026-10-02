@@ -1,0 +1,62 @@
+<header class="bg-brand-900 px-4 py-5 text-white">
+  <h1 class="text-2xl font-bold">Resumo do mês</h1>
+</header>
+
+<section class="space-y-4 px-4 py-4">
+  <div>
+    <label for="month" class="block text-lg font-semibold">Mês</label>
+    <input
+      id="month"
+      type="month"
+      [value]="month()"
+      (change)="changeMonth($any($event.target).value)"
+      class="mt-2 h-14 w-full rounded-xl border-2 border-gray-400 px-4 text-xl"
+    />
+  </div>
+
+  @if (!sync.online()) {
+    <p
+      class="flex gap-2 rounded-2xl border-2 border-amber-700 bg-amber-50 p-4 text-lg text-amber-900"
+    >
+      <app-icon name="cloud-off" />
+      Sem internet. O resumo aparece quando o celular conectar.
+    </p>
+  } @else if (failed()) {
+    <p class="rounded-xl bg-gray-100 p-4 text-lg">Não foi possível carregar o resumo agora.</p>
+  }
+
+  @if (summary(); as s) {
+    <dl class="grid gap-3">
+      <div class="rounded-2xl border-2 border-red-700 bg-red-50 p-4">
+        <dt class="text-lg">Total a receber (todos os clientes)</dt>
+        <dd class="text-3xl font-bold text-red-700">{{ formatBRL(s.total_receivable) }}</dd>
+      </div>
+      <div class="rounded-2xl border-2 border-gray-300 p-4">
+        <dt class="text-lg">Vendido no fiado no mês</dt>
+        <dd class="text-2xl font-bold">{{ formatBRL(s.sold_on_tab_in_month) }}</dd>
+      </div>
+      <div class="rounded-2xl border-2 border-brand-700 bg-brand-50 p-4">
+        <dt class="text-lg">Recebido no mês</dt>
+        <dd class="text-2xl font-bold text-brand-800">{{ formatBRL(s.received_in_month) }}</dd>
+      </div>
+    </dl>
+
+    <h2 class="pt-2 text-xl font-bold">Quem mais deve</h2>
+    @if (s.top_debtors.length === 0) {
+      <p class="text-lg">Ninguém com saldo em aberto.</p>
+    }
+    <ol class="space-y-2">
+      @for (d of s.top_debtors; track d.id) {
+        <li>
+          <a
+            [routerLink]="['/clientes', d.id]"
+            class="flex min-h-14 items-center justify-between rounded-xl border-2 border-gray-300 px-4 text-lg"
+          >
+            <span class="font-semibold">{{ d.name }}</span>
+            <span class="font-bold text-red-700">{{ formatBRL(d.balance) }}</span>
+          </a>
+        </li>
+      }
+    </ol>
+  }
+</section>
