@@ -115,3 +115,16 @@ def test_month_range_crosses_year():
     month, start, end = month_range("2026-12")
     assert month == "2026-12"
     assert start.year == 2026 and end.year == 2027 and end.month == 1
+
+
+def test_statement_shows_previous_balance(service, joao, users):
+    old = purchase(joao.id, "50.00")
+    old.created_at = datetime(2026, 9, 20, 14, 0, tzinfo=timezone.utc)
+    service.record_purchase(old, users["owner"])
+    service.record_purchase(purchase(joao.id, "23.40"), users["owner"])
+
+    statement = service.statement(joao.id, "2026-10")
+
+    assert statement.previous_balance == Decimal("50.00")
+    assert "Saldo anterior: R$ 50,00" in statement.text
+    assert statement.text.endswith("SALDO: R$ 73,40")

@@ -2,7 +2,7 @@ import { Component, effect, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ClientView, LedgerService } from '../../core/ledger.service';
 import { PaymentMethod } from '../../core/models';
-import { formatBRL, parseAmount, toCents } from '../../core/money';
+import { formatBRL, maskAmount, parseAmount, toCents } from '../../core/money';
 import { BackHeader } from '../../shared/back-header';
 import { Icon } from '../../shared/icon';
 
@@ -47,6 +47,13 @@ export class RecordPage {
 
   protected owes(): boolean {
     return toCents(this.client()?.balance) > 0;
+  }
+
+  protected onAmount(input: HTMLInputElement): void {
+    const masked = maskAmount(input.value);
+    input.value = masked;
+    this.amount.set(masked);
+    this.error.set('');
   }
 
   protected setMode(mode: Mode): void {

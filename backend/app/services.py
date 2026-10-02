@@ -193,18 +193,25 @@ class LedgerService:
         ]
         entries.sort(key=lambda e: e.created_at)
         out = self.client_out(client)
+        previous = self.ledger.balance_before(client.id, start)
         return StatementOut(
             client=out,
             month=month,
             entries=entries,
+            previous_balance=previous,
             balance=out.balance,
-            text=self._statement_text(client.name, month, entries, out.balance),
+            text=self._statement_text(client.name, month, entries, previous, out.balance),
         )
 
     @staticmethod
-    def _statement_text(name: str, month: str, entries: list[EntryOut], balance: Decimal) -> str:
+    def _statement_text(
+        name: str, month: str, entries: list[EntryOut], previous: Decimal, balance: Decimal
+    ) -> str:
         year, mon = month.split("-")
         lines = ["Hortifrúti Recanto Verde", f"Extrato de {name} - {mon}/{year}", ""]
+        if previous != 0:
+            lines.append(f"Saldo anterior: {brl(previous)}")
+        header = len(lines)
         for entry in entries:
             if entry.canceled:
                 continue
@@ -216,7 +223,7 @@ class LedgerService:
                 label = "Pagamento"
                 extra = f" ({METHOD_LABELS[entry.method.value]})"
             lines.append(f"{day}  {label}  {brl(entry.amount)}{extra}")
-        if len(lines) == 3:
+        if len(lines) == header:
             lines.append("Nenhuma movimentação no mês.")
         lines += ["", f"SALDO: {brl(balance)}"]
         return "\n".join(lines)

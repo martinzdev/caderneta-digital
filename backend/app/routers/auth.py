@@ -37,7 +37,7 @@ def _issue_tokens(db: DbSession, user: User, response: Response) -> TokenOut:
         httponly=True,
         secure=settings.secure_cookies,
         samesite="strict",
-        path="/auth",
+        path="/",
     )
     return TokenOut(access_token=create_access_token(user.id, user.role.value))
 
@@ -94,7 +94,7 @@ def logout(db: DbSession, response: Response, refresh_token: str | None = Cookie
         if stored:
             stored.revoked = True
             db.commit()
-    response.delete_cookie(REFRESH_COOKIE, path="/auth")
+    response.delete_cookie(REFRESH_COOKIE, path="/")
 
 
 @router.get("/me", response_model=UserOut)

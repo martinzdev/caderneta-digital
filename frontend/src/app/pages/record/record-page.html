@@ -58,11 +58,11 @@
         <label for="amount" class="block text-lg font-semibold">Valor (R$)</label>
         <input
           id="amount"
-          inputmode="decimal"
+          inputmode="numeric"
           autocomplete="off"
           placeholder="0,00"
           [value]="amount()"
-          (input)="amount.set($any($event.target).value); error.set('')"
+          (input)="onAmount($any($event.target))"
           [attr.aria-invalid]="!!error()"
           aria-describedby="amount-error"
           class="mt-2 h-16 w-full rounded-xl border-2 px-4 text-3xl"

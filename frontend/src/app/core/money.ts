@@ -24,8 +24,11 @@ export function parseAmount(input: string): number | null {
   return cents > 0 ? cents : null;
 }
 
-export function maskAmount(digits: string): string {
-  const only = digits.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+export function maskAmount(typed: string): string {
+  const only = typed.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+  if (!only) {
+    return '';
+  }
   const padded = only.padStart(3, '0');
   return `${padded.slice(0, -2)},${padded.slice(-2)}`;
 }

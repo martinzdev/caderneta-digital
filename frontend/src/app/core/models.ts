@@ -58,6 +58,7 @@ export interface Statement {
   client: Client;
   month: string;
   entries: Entry[];
+  previous_balance: string;
   balance: string;
   text: string;
 }

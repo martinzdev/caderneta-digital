@@ -112,6 +112,7 @@ class StatementOut(BaseModel):
     client: ClientOut
     month: str
     entries: list[EntryOut]
+    previous_balance: Decimal
     balance: Decimal
     text: str
 

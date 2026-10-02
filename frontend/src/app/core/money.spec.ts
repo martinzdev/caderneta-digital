@@ -1,4 +1,4 @@
-import { formatBRL, fromCents, parseAmount, toCents } from './money';
+import { formatBRL, fromCents, maskAmount, parseAmount, toCents } from './money';
 
 describe('money', () => {
   it('parses amounts typed with comma or dot', () => {
@@ -22,5 +22,13 @@ describe('money', () => {
   it('formats in brazilian reais', () => {
     expect(formatBRL('1234.5')).toBe('R$ 1.234,50');
     expect(formatBRL(0)).toBe('R$ 0,00');
+  });
+
+  it('masks typed digits as cents', () => {
+    expect(maskAmount('2340')).toBe('23,40');
+    expect(maskAmount('5')).toBe('0,05');
+    expect(maskAmount('R$ 1.050,00')).toBe('1050,00');
+    expect(maskAmount('')).toBe('');
+    expect(parseAmount(maskAmount('2340'))).toBe(2340);
   });
 });

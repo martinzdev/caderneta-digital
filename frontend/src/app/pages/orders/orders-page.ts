@@ -3,7 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 import { ClientView, LedgerService } from '../../core/ledger.service';
 import { Order, OrderPayment, OrderStatus } from '../../core/models';
-import { fromCents, parseAmount } from '../../core/money';
+import { fromCents, maskAmount, parseAmount } from '../../core/money';
 import { SyncService } from '../../core/sync.service';
 import { Icon } from '../../shared/icon';
 
@@ -129,8 +129,10 @@ export class OrdersPage implements OnInit {
     }
   }
 
-  protected setAmount(orderId: string, value: string): void {
-    this.deliveryAmount.update((map) => ({ ...map, [orderId]: value }));
+  protected setAmount(orderId: string, input: HTMLInputElement): void {
+    const masked = maskAmount(input.value);
+    input.value = masked;
+    this.deliveryAmount.update((map) => ({ ...map, [orderId]: masked }));
   }
 
   private async change(order: Order, status: OrderStatus, amount?: string, purchaseId?: string) {
