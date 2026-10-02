@@ -109,6 +109,19 @@ class LedgerRepository:
         ).all()
         return list(purchases), list(payments)
 
+    def balance_before(self, client_id: str, start: datetime) -> Decimal:
+        def total(model) -> Decimal:
+            value = self.db.scalar(
+                select(func.coalesce(func.sum(model.amount), 0)).where(
+                    model.client_id == client_id,
+                    model.canceled.is_(False),
+                    model.created_at < start,
+                )
+            )
+            return Decimal(value)
+
+        return (total(Purchase) - total(Payment)).quantize(Decimal("0.01"))
+
     def month_totals(self, start: datetime, end: datetime) -> tuple[Decimal, Decimal]:
         def total(model) -> Decimal:
             value = self.db.scalar(
