@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.routers import auth
+from app.routers import auth, clients, ledger, orders
 
 logger = logging.getLogger("caderneta")
 
@@ -48,7 +48,8 @@ def create_app() -> FastAPI:
     def health():
         return {"status": "ok"}
 
-    app.include_router(auth.router)
+    for router in (auth.router, clients.router, ledger.router, orders.router):
+        app.include_router(router)
     return app
 
 
