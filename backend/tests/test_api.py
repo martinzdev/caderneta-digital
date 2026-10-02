@@ -154,3 +154,78 @@ def test_summary(client, owner_headers):
 
     assert summary["total_receivable"] == "50.00"
     assert summary["top_debtors"][0]["name"] == "João Pereira"
+
+
+def add_payment(client, headers, client_id, amount="10.00"):
+    return client.post(
+        "/payments",
+        json={
+            "id": new_id(),
+            "client_id": client_id,
+            "amount": amount,
+            "method": "cash",
+            "created_at": now_iso(),
+        },
+        headers=headers,
+    )
+
+
+def test_payment_and_cancel(client, owner_headers):
+    joao = create_client(client, owner_headers)
+    add_purchase(client, owner_headers, joao["id"], amount="30.00")
+
+    payment = add_payment(client, owner_headers, joao["id"])
+    assert payment.status_code == 201
+    assert payment.json()["balance"] == "20.00"
+
+    canceled = client.post(f"/payments/{payment.json()['id']}/cancel", headers=owner_headers)
+    assert canceled.json()["balance"] == "30.00"
+
+
+def test_update_client(client, owner_headers):
+    joao = create_client(client, owner_headers)
+    create_client(client, owner_headers, name="Maria Souza", phone="69988887777")
+
+    response = client.patch(
+        f"/clients/{joao['id']}", json={"address": "Rua A, 15"}, headers=owner_headers
+    )
+    assert response.json()["address"] == "Rua A, 15"
+
+    taken = client.patch(
+        f"/clients/{joao['id']}", json={"phone": "69988887777"}, headers=owner_headers
+    )
+    assert taken.status_code == 409
+
+
+def test_client_with_open_balance_cannot_be_deactivated(client, owner_headers, staff_headers):
+    joao = create_client(client, owner_headers)
+    add_purchase(client, owner_headers, joao["id"], amount="10.00")
+    url = f"/clients/{joao['id']}/deactivate"
+
+    assert client.post(url, headers=staff_headers).status_code == 403
+    assert client.post(url, headers=owner_headers).status_code == 409
+
+    add_payment(client, owner_headers, joao["id"], amount="10.00")
+    assert client.post(url, headers=owner_headers).json()["active"] is False
+    assert client.get(f"/clients/{joao['id']}", headers=owner_headers).status_code == 404
+
+
+def test_orders_can_be_filtered_by_status(client, owner_headers):
+    joao = create_client(client, owner_headers, address="Rua das Flores, 10")
+    for _ in range(2):
+        client.post(
+            "/orders",
+            json={
+                "id": new_id(),
+                "client_id": joao["id"],
+                "items": "1 alface",
+                "payment": "on_delivery",
+                "created_at": now_iso(),
+            },
+            headers=owner_headers,
+        )
+
+    orders = client.get("/orders", params={"status_filter": "new"}, headers=owner_headers).json()
+
+    assert len(orders) == 2
+    assert client.get("/orders?status_filter=delivered", headers=owner_headers).json() == []
