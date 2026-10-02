@@ -20,7 +20,7 @@ jobs:
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
-      - run: pytest -q
+      - run: pytest -q --cov --cov-report=term
       - name: Migrations apply on a clean database
         run: alembic upgrade head
         env:
