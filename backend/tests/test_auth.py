@@ -29,3 +29,12 @@ def test_refresh_and_logout(client, owner_headers):
     assert client.post("/auth/refresh").status_code == 200
     assert client.post("/auth/logout").status_code == 204
     assert client.post("/auth/refresh").status_code == 401
+
+
+def test_refresh_cookie_works_behind_api_prefix(client):
+    response = client.post("/auth/login", json={"login": "marta", "password": PASSWORD})
+    cookie = response.headers["set-cookie"]
+
+    assert "Path=/;" in cookie
+    assert "HttpOnly" in cookie
+    assert "SameSite=strict" in cookie
