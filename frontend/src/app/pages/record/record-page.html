@@ -18,7 +18,11 @@
       }
     </div>
 
-    <div class="grid grid-cols-2 gap-3" role="group" aria-label="O que você quer fazer?">
+    <div
+      class="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-3"
+      role="group"
+      aria-label="O que você quer fazer?"
+    >
       <button
         type="button"
         (click)="setMode('purchase')"
@@ -95,7 +99,7 @@
       } @else {
         <fieldset>
           <legend class="text-lg font-semibold">Forma de pagamento</legend>
-          <div class="mt-2 grid grid-cols-3 gap-3">
+          <div class="mt-2 grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-3">
             @for (m of methods; track m.value) {
               <button
                 type="button"
